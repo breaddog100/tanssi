@@ -3,6 +3,13 @@
 # 安装建设者节点
 function install_builders_node() {
 
+	# 用户参数
+	read -p "YOUR_APPCHAIN_SPECS_FILE_LOCATION: " YOUR_APPCHAIN_SPECS_FILE_LOCATION
+	read -p "INSERT_YOUR_APPCHAIN_BOOTNODE: " INSERT_YOUR_APPCHAIN_BOOTNODE
+	read -p "YOUR_APPCHAIN_SPECS_FILE_LOCATION: " YOUR_APPCHAIN_SPECS_FILE_LOCATION
+	echo "暂未申请到账号，教程未完成，如有需要请与我联系..."
+	exit 0 
+
 	sudo apt update
     sudo apt upgrade -y
 
@@ -22,11 +29,6 @@ function install_builders_node() {
 	wget -P $HOME/appchain-data https://raw.githubusercontent.com/papermoonio/external-files/main/Moonbeam/Moonbase-Alpha/westend-alphanet-raw-specs.json	
 	chmod +x $HOME/appchain-data/*
 	
-	# 用户参数
-	read -p "YOUR_APPCHAIN_SPECS_FILE_LOCATION: " YOUR_APPCHAIN_SPECS_FILE_LOCATION
-	read -p "INSERT_YOUR_APPCHAIN_BOOTNODE: " INSERT_YOUR_APPCHAIN_BOOTNODE
-	read -p "YOUR_APPCHAIN_SPECS_FILE_LOCATION: " YOUR_APPCHAIN_SPECS_FILE_LOCATION
-	exit 0 
 	# 创建服务
 	sudo tee /etc/systemd/system/appchain.service > /dev/null <<EOF
 [Unit]
@@ -103,7 +105,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=on-failure
 RestartSec=10
-User=tanssi_service
+User=\$USER
 SyslogIdentifier=tanssi
 SyslogFacility=local7
 KillSignal=SIGHUP
@@ -116,12 +118,10 @@ ExecStart=$HOME/tanssi-data/tanssi-node \
 --blocks-pruning=2000 \
 --collator \
 --database paritydb \
---telemetry-url='wss://telemetry.polkadot.io/submit/ 0' 
--- \
+--telemetry-url='wss://telemetry.polkadot.io/submit/ 0' \
 --name=$producer_name \
 --base-path=$HOME/tanssi-data/container \
---telemetry-url='wss://telemetry.polkadot.io/submit/ 0' 
--- \
+--telemetry-url='wss://telemetry.polkadot.io/submit/ 0' \
 --chain=westend_moonbase_relay_testnet \
 --name=$relay_node_name \
 --sync=fast \
@@ -136,11 +136,12 @@ WantedBy=multi-user.target
 EOF
 
 	# 启动服务
+	sudo systemctl daemon-reload
 	systemctl enable tanssi.service
 	systemctl start tanssi.service
 	
 	echo "==============================部署完成==================================="
-
+	sleep 3
 }
 
 # 查看区块生产者节点状态
