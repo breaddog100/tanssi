@@ -70,6 +70,11 @@ EOF
 # 安装区块生产者节点
 function install_block_producer_node() {
 
+	# 用户参数
+	read -p "节点名称: " tanssi_node_name
+	read -p "生产者名称(请勿与上重复): " producer_name
+	read -p "中继节点名称(请勿与上重复): " relay_node_name
+
 	sudo apt update
     sudo apt upgrade -y
 
@@ -86,11 +91,6 @@ function install_block_producer_node() {
 	mkdir -p $HOME/tanssi-data
 	wget -P $HOME/tanssi-data https://github.com/moondance-labs/tanssi/releases/download/v0.6.1/tanssi-node
 	chmod +x $HOME/tanssi-data/*
-	
-	# 用户参数
-	read -p "节点名称: " tanssi_node_name
-	read -p "生产者名称(请勿与上重复): " producer_name
-	read -p "中继节点名称(请勿与上重复): " relay_node_name
 	
 	# 创建服务
 	sudo tee /etc/systemd/system/tanssi.service > /dev/null <<EOF
@@ -190,7 +190,7 @@ function main_menu() {
         echo "4. 区块生产者节点秘钥"
         echo "5. 启动区块生产者节点"
         echo "6. 停止区块生产者节点"
-        echo "---------------建设者节点相关选项---------------"
+        #echo "---------------建设者节点相关选项---------------"
         echo "--------------------其他--------------------"
         echo "0. 退出脚本exit"
         read -p "请输入选项: " OPTION
