@@ -105,23 +105,25 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=on-failure
 RestartSec=10
-User=\$USER
+User=$USER
 SyslogIdentifier=tanssi
 SyslogFacility=local7
 KillSignal=SIGHUP
 ExecStart=$HOME/tanssi-data/tanssi-node \
 --chain=dancebox \
---name=$tanssi_node_name \
+--name=tanssi_node_name \
 --sync=warp \
 --base-path=$HOME/tanssi-data/para \
 --state-pruning=2000 \
 --blocks-pruning=2000 \
 --collator \
 --database paritydb \
---telemetry-url='wss://telemetry.polkadot.io/submit/ 0' \
+--telemetry-url='wss://telemetry.polkadot.io/submit/ 0' 
+-- \
 --name=$producer_name \
 --base-path=$HOME/tanssi-data/container \
---telemetry-url='wss://telemetry.polkadot.io/submit/ 0' \
+--telemetry-url='wss://telemetry.polkadot.io/submit/ 0' 
+-- \
 --chain=westend_moonbase_relay_testnet \
 --name=$relay_node_name \
 --sync=fast \
