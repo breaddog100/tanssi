@@ -178,6 +178,39 @@ function start_tanssi_node() {
 	systemctl start tanssi.service
 }
 
+# 修改生产者节点名称
+function update_tanssi_name(){
+
+	# 用户参数
+	read -p "节点名称: " tanssi_node_name
+	read -p "生产者名称(请勿与上重复): " producer_name
+	read -p "中继节点名称(请勿与上重复): " relay_node_name
+	
+	systemctl start tanssi.service
+	sed -i '
+    /ExecStart/ {
+        :loop
+        n
+        /--name=/ {
+            s/--name=[^ ]*/--name=$tanssi_node_name/
+            b loop
+        }
+        /--name=/ {
+            s/--name=[^ ]*/--name=$producer_name/
+            b loop
+        }
+        /--name=/ {
+            s/--name=[^ ]*/--name=$relay_node_name/
+            b loop
+        }
+    }
+' /etc/systemd/system/tanssi.service
+
+	sudo systemctl daemon-reload
+	systemctl start tanssi.service
+
+}
+
 # MENU
 function main_menu() {
     while true; do
@@ -193,6 +226,7 @@ function main_menu() {
         echo "4. 区块生产者节点秘钥"
         echo "5. 启动区块生产者节点"
         echo "6. 停止区块生产者节点"
+        echo "7. 修改生产者节点名称"
         #echo "---------------建设者节点相关选项---------------"
         echo "--------------------其他--------------------"
         echo "0. 退出脚本exit"
@@ -205,6 +239,7 @@ function main_menu() {
         4) view_tanssi_key ;;
         5) start_tanssi_node ;;
         6) stop_tanssi_node ;;
+        7) update_tanssi_name ;;
         
         0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
