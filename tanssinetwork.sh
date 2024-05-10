@@ -186,27 +186,54 @@ function update_tanssi_name(){
 	read -p "生产者名称(请勿与上重复): " producer_name
 	read -p "中继节点名称(请勿与上重复): " relay_node_name
 	
-	systemctl start tanssi.service
-	sed -i '
-    /ExecStart/ {
-        :loop
-        n
-        /--name=/ {
-            s/--name=[^ ]*/--name=$tanssi_node_name/
-            b loop
-        }
-        /--name=/ {
-            s/--name=[^ ]*/--name=$producer_name/
-            b loop
-        }
-        /--name=/ {
-            s/--name=[^ ]*/--name=$relay_node_name/
-            b loop
-        }
-    }
-' /etc/systemd/system/tanssi.service
+	systemctl stop tanssi.service
+	sudo rm -f /etc/systemd/system/tanssi.service
+	
+	# 创建服务
+	sudo tee /etc/systemd/system/tanssi.service > /dev/null <<EOF
+[Unit]
+Description="Tanssi systemd service"
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+User=$USER
+SyslogIdentifier=tanssi
+SyslogFacility=local7
+KillSignal=SIGHUP
+ExecStart=$HOME/tanssi-data/tanssi-node \
+--chain=dancebox \
+--name=$tanssi_node_name \
+--sync=warp \
+--base-path=$HOME/tanssi-data/para \
+--state-pruning=2000 \
+--blocks-pruning=2000 \
+--collator \
+--database paritydb \
+--telemetry-url='wss://telemetry.polkadot.io/submit/ 0' 
+-- \
+--name=$producer_name \
+--base-path=$HOME/tanssi-data/container \
+--telemetry-url='wss://telemetry.polkadot.io/submit/ 0' 
+-- \
+--chain=westend_moonbase_relay_testnet \
+--name=$relay_node_name \
+--sync=fast \
+--base-path=$HOME/tanssi-data/relay \
+--state-pruning=2000 \
+--blocks-pruning=2000 \
+--database paritydb \
+--telemetry-url='wss://telemetry.polkadot.io/submit/ 0' 
+
+[Install]
+WantedBy=multi-user.target
+EOF
 
 	sudo systemctl daemon-reload
+	systemctl enable tanssi.service
 	systemctl start tanssi.service
 
 }
